@@ -60,6 +60,16 @@ class HelloWorldTileService : SuspendingTileService() {
     }
 
     private fun tileLayout(): LayoutElementBuilders.LayoutElement {
-        TODO()
+        val text = getString(R.string.hello_tile_body)
+        return LayoutElementBuilders.Box.Builder()
+            .setVerticalAlignment(LayoutElementBuilders.VERTICAL_ALIGN_CENTER)
+            .setWidth(DimensionBuilders.expand())
+            .setHeight(DimensionBuilders.expand())
+            .addContent(
+                LayoutElementBuilders.Text.Builder()
+                    .setText(text)
+                    .build()
+            )
+            .build()
     }
 }
