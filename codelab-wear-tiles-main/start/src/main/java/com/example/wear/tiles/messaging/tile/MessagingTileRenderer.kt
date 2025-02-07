@@ -36,7 +36,6 @@ import com.example.wear.tiles.R
 import com.example.wear.tiles.messaging.Contact
 import com.example.wear.tiles.messaging.MessagingRepo.Companion.knownContacts
 import com.example.wear.tiles.messaging.tile.MessagingTileRenderer.Companion.ID_IC_SEARCH
-import com.example.wear.tiles.tools.emptyClickable
 import com.google.android.horologist.annotations.ExperimentalHorologistApi
 import com.google.android.horologist.tiles.images.drawableResToImageResource
 import com.google.android.horologist.tiles.images.toImageResource
@@ -52,7 +51,15 @@ class MessagingTileRenderer(context: Context) :
         return messagingTileLayout(
             context = context,
             deviceParameters = deviceParameters,
-            state = state
+            state = state,
+            contactClickableFactory = { contact ->
+                launchActivityClickable(
+                    clickableId = contact.id.toString(),
+                    androidActivity = openConversation(contact),
+                )
+            },
+            searchButtonClickable = launchActivityClickable("search_button", openSearch()),
+            newButtonClickable = launchActivityClickable("new_button", openNewConversation())
         )
     }
 
@@ -83,7 +90,10 @@ class MessagingTileRenderer(context: Context) :
 private fun messagingTileLayout(
     context: Context,
     deviceParameters: DeviceParametersBuilders.DeviceParameters,
-    state: MessagingTileState
+    state: MessagingTileState,
+    contactClickableFactory: (Contact) -> Clickable,
+    searchButtonClickable: Clickable,
+    newButtonClickable: Clickable,
 ) = PrimaryLayout.Builder(deviceParameters)
     .setResponsiveContentInsetEnabled(true)
     .setContent(
@@ -96,19 +106,24 @@ private fun messagingTileLayout(
                         contactLayout(
                             context = context,
                             contact = contact,
-                            clickable = emptyClickable,
+                            clickable = contactClickableFactory(contact),
                         )
                     )
                 }
             }
-            .addButtonContent(searchLayout(context, emptyClickable))
+            .addButtonContent(
+                searchLayout(
+                    context = context,
+                    clickable = searchButtonClickable,
+                )
+            )
             .build()
     )
     .setPrimaryChipContent(
         CompactChip.Builder(
             /*context = */ context,
             /*text = */ context.getString(R.string.tile_messaging_create_new),
-            /*clickable = */ emptyClickable,
+            /*clickable = */ newButtonClickable,
             /*deviceParameters = */ deviceParameters,
         )
             .setChipColors(ChipColors.primaryChipColors(MessagingTileTheme.colors))
@@ -137,7 +152,7 @@ private fun searchLayout(
     clickable: Clickable,
 ) = Button.Builder(context, clickable)
     .setContentDescription(context.getString(R.string.tile_messaging_search))
-    .setIconContent(MessagingTileRenderer.ID_IC_SEARCH)
+    .setIconContent(ID_IC_SEARCH)
     .setButtonColors(ButtonColors.secondaryButtonColors(MessagingTileTheme.colors))
     .build()
 
