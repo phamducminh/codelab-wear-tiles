@@ -28,8 +28,12 @@ import androidx.wear.protolayout.ResourceBuilders.Resources
 import androidx.wear.protolayout.material.Text
 import androidx.wear.protolayout.material.Typography
 import androidx.wear.protolayout.material.layouts.PrimaryLayout
+import androidx.wear.tiles.tooling.preview.Preview
+import androidx.wear.tiles.tooling.preview.TilePreviewData
+import androidx.wear.tooling.preview.devices.WearDevices
 import com.example.wear.tiles.R
 import com.example.wear.tiles.messaging.Contact
+import com.example.wear.tiles.messaging.MessagingRepo.Companion.knownContacts
 import com.google.android.horologist.annotations.ExperimentalHorologistApi
 import com.google.android.horologist.tiles.images.drawableResToImageResource
 import com.google.android.horologist.tiles.images.toImageResource
@@ -86,3 +90,14 @@ private fun messagingTileLayout(
             .build()
     )
     .build()
+
+@Preview(device = WearDevices.SMALL_ROUND)
+@Preview(device = WearDevices.LARGE_ROUND)
+fun messagingTileLayoutPreview(context: Context): TilePreviewData {
+    return TilePreviewData { request ->
+        MessagingTileRenderer(context).renderTimeline(
+            MessagingTileState(knownContacts),
+            request
+        )
+    }
+}
