@@ -19,14 +19,15 @@ package com.example.wear.tiles.messaging.tile
 
 import android.content.Context
 import android.graphics.Bitmap
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
-import androidx.wear.protolayout.ColorBuilders
 import androidx.wear.protolayout.DeviceParametersBuilders
 import androidx.wear.protolayout.LayoutElementBuilders
+import androidx.wear.protolayout.ModifiersBuilders.Clickable
 import androidx.wear.protolayout.ResourceBuilders.Resources
-import androidx.wear.protolayout.material.Text
-import androidx.wear.protolayout.material.Typography
+import androidx.wear.protolayout.material.Button
+import androidx.wear.protolayout.material.ButtonColors
+import androidx.wear.protolayout.material.ChipColors
+import androidx.wear.protolayout.material.CompactChip
+import androidx.wear.protolayout.material.layouts.MultiButtonLayout
 import androidx.wear.protolayout.material.layouts.PrimaryLayout
 import androidx.wear.tiles.tooling.preview.Preview
 import androidx.wear.tiles.tooling.preview.TilePreviewData
@@ -34,6 +35,7 @@ import androidx.wear.tooling.preview.devices.WearDevices
 import com.example.wear.tiles.R
 import com.example.wear.tiles.messaging.Contact
 import com.example.wear.tiles.messaging.MessagingRepo.Companion.knownContacts
+import com.example.wear.tiles.tools.emptyClickable
 import com.google.android.horologist.annotations.ExperimentalHorologistApi
 import com.google.android.horologist.tiles.images.drawableResToImageResource
 import com.google.android.horologist.tiles.images.toImageResource
@@ -84,11 +86,58 @@ private fun messagingTileLayout(
 ) = PrimaryLayout.Builder(deviceParameters)
     .setResponsiveContentInsetEnabled(true)
     .setContent(
-        Text.Builder(context, context.getString(R.string.hello_tile_body))
-            .setTypography(Typography.TYPOGRAPHY_BODY1)
-            .setColor(ColorBuilders.argb(Color.White.toArgb()))
+        MultiButtonLayout.Builder()
+            .apply {
+                // In a PrimaryLayout with a compact chip at the bottom, we can fit 5 buttons.
+                // We're only taking the first 4 contacts so that we can fit a Search button too.
+                state.contacts.take(4).forEach { contact ->
+                    addButtonContent(
+                        contactLayout(
+                            context = context,
+                            contact = contact,
+                            clickable = emptyClickable,
+                        )
+                    )
+                }
+            }
+            .addButtonContent(searchLayout(context, emptyClickable))
             .build()
     )
+    .setPrimaryChipContent(
+        CompactChip.Builder(
+            /*context = */ context,
+            /*text = */ context.getString(R.string.tile_messaging_create_new),
+            /*clickable = */ emptyClickable,
+            /*deviceParameters = */ deviceParameters,
+        )
+            .setChipColors(ChipColors.primaryChipColors(MessagingTileTheme.colors))
+            .build()
+    )
+    .build()
+
+private fun contactLayout(
+    context: Context,
+    contact: Contact,
+    clickable: Clickable,
+) = Button.Builder(context, clickable)
+    .setContentDescription(contact.name)
+    .apply {
+        if (contact.avatarUrl != null) {
+            setImageContent(contact.imageResourceId())
+        } else {
+            setTextContent(contact.initials)
+                .setButtonColors(ButtonColors.secondaryButtonColors(MessagingTileTheme.colors))
+        }
+    }
+    .build()
+
+private fun searchLayout(
+    context: Context,
+    clickable: Clickable,
+) = Button.Builder(context, clickable)
+    .setContentDescription(context.getString(R.string.tile_messaging_search))
+    .setIconContent(MessagingTileRenderer.ID_IC_SEARCH)
+    .setButtonColors(ButtonColors.secondaryButtonColors(MessagingTileTheme.colors))
     .build()
 
 @Preview(device = WearDevices.SMALL_ROUND)
