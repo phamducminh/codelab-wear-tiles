@@ -35,6 +35,7 @@ import androidx.wear.tooling.preview.devices.WearDevices
 import com.example.wear.tiles.R
 import com.example.wear.tiles.messaging.Contact
 import com.example.wear.tiles.messaging.MessagingRepo.Companion.knownContacts
+import com.example.wear.tiles.messaging.tile.MessagingTileRenderer.Companion.ID_IC_SEARCH
 import com.example.wear.tiles.tools.emptyClickable
 import com.google.android.horologist.annotations.ExperimentalHorologistApi
 import com.google.android.horologist.tiles.images.drawableResToImageResource
@@ -140,10 +141,22 @@ private fun searchLayout(
     .setButtonColors(ButtonColors.secondaryButtonColors(MessagingTileTheme.colors))
     .build()
 
+private fun previewResources() = Resources.Builder()
+    .addIdToImageMapping(ID_IC_SEARCH, drawableResToImageResource(R.drawable.ic_search_24))
+    .addIdToImageMapping(
+        knownContacts[1].imageResourceId(),
+        drawableResToImageResource(R.drawable.ali)
+    )
+    .addIdToImageMapping(
+        knownContacts[2].imageResourceId(),
+        drawableResToImageResource(R.drawable.taylor)
+    )
+    .build()
+
 @Preview(device = WearDevices.SMALL_ROUND)
 @Preview(device = WearDevices.LARGE_ROUND)
 fun messagingTileLayoutPreview(context: Context): TilePreviewData {
-    return TilePreviewData { request ->
+    return TilePreviewData(onTileResourceRequest = { previewResources() }) { request ->
         MessagingTileRenderer(context).renderTimeline(
             MessagingTileState(knownContacts),
             request
